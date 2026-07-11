@@ -1,0 +1,28 @@
+.env
+*.mov
+*.mp4
+*.env.local
+.DS_Store
+node_modules/
+__pycache__/
+*.pyc
+.idea/
+
+# Personal/local Claude Code permission overrides — accumulates individual
+# approvals, not shared project config. .claude/settings.json (the real,
+# deliberate config) is not excluded.
+.claude/settings.local.json
+
+# Internal-only, never for client handover — session-continuity notes and
+# internal design/recording docs. PROGRESS.md specifically references real
+# employer/personal-project names and must never leave this machine.
+PROGRESS.md
+docs/internal/
+
+# Terraform local state and working dirs — never commit real cluster state.
+# The wildcard-suffix form (not just an exact .tfstate.backup match) also
+# catches Terraform's timestamped backup variant, e.g.
+# terraform.tfstate.1783693614.backup, which the exact-suffix pattern missed.
+terraform/**/.terraform/
+terraform/**/*.tfstate*
+terraform/**/tfplan*
