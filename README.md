@@ -91,6 +91,17 @@ Task records for each agent live under `agents/{name}/tasks/` — a plain
 filesystem convention (`planned/` → `in-progress/` → `done/`), not a
 Claude Code feature, that tracks what each agent has worked on.
 
+**Ending a session:** actual infrastructure changes are already
+committed and pushed as part of `devops`'s normal procedure (each one
+goes through its own branch and PR). For anything else that accumulated
+locally during the session — task record updates, session notes — ask
+`devops` to commit and push it before you close the session, so nothing
+is left uncommitted between sessions:
+
+```
+devops commit and push any outstanding changes
+```
+
 ## Project structure
 
 ```
