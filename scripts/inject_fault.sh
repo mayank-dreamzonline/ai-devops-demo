@@ -7,7 +7,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")/../terraform/base"
 
-echo "Injecting fault: dropping node group capacity and tainting it NoSchedule..."
+echo "Injecting fault: applying a NO_EXECUTE taint to the node group (node count unchanged)..."
 terraform apply -auto-approve -var fault_active=true
 
 echo ""
