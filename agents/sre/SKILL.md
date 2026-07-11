@@ -1,3 +1,8 @@
+---
+name: sre
+description: TODO - add skill description
+---
+
 # Bootstrap: SRE
 
 Triggered by `sre {request}` or `@sre {request}` — both work, or a

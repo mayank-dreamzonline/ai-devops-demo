@@ -1,3 +1,7 @@
+---
+name: coordinator
+description: TODO - add skill description
+---
 # Bootstrap: Coordinator
 
 Triggered by `coordinator {request}` or `@coordinator {request}` — both

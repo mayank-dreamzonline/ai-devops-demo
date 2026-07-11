@@ -1,3 +1,8 @@
+---
+name: devops
+description: TODO - add skill description
+---
+
 # Bootstrap: DevOps
 
 Triggered by `devops {request}` or `@devops {request}` — both work, or a
