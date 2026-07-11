@@ -13,11 +13,13 @@ __pycache__/
 # deliberate config) is not excluded.
 .claude/settings.local.json
 
-# Internal-only, never for client handover — session-continuity notes and
-# internal design/recording docs. PROGRESS.md specifically references real
-# employer/personal-project names and must never leave this machine.
+# Internal-only, never for client handover — session-continuity notes,
+# internal design/recording docs, and engagement/client details. These
+# reference real employer/personal-project/client names and must never
+# leave this machine.
 PROGRESS.md
 docs/internal/
+ENGAGEMENT.md
 
 # Terraform local state and working dirs — never commit real cluster state.
 # The wildcard-suffix form (not just an exact .tfstate.backup match) also
