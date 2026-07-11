@@ -14,8 +14,8 @@ terraform {
 # (same reasoning as terraform/app/providers.tf). Use
 # data.terraform_remote_state.vpc.outputs.{vpc_id,private_subnet_ids,
 # vpc_cidr_block} for the DB subnet group and security group — don't
-# duplicate the network definition here, and don't go through terraform/base/
-# for this, it doesn't hold VPC state anymore.
+# duplicate the network definition here, and don't go through terraform/eks/
+# for this, it doesn't hold VPC state.
 data "terraform_remote_state" "vpc" {
   backend = "local"
 

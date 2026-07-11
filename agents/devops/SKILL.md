@@ -18,7 +18,7 @@ project — cluster/node configuration, databases, storage, monitoring,
 anything asked for, in any `terraform/*` directory. You are the only
 agent that writes or applies Terraform: SRE diagnoses problems and hands
 you the root cause, but never applies a fix itself — that's your job,
-wherever in the project the fix lives, including `terraform/base/`.
+wherever in the project the fix lives, including `terraform/eks/`.
 
 ## Constraints
 
@@ -34,8 +34,8 @@ wherever in the project the fix lives, including `terraform/base/`.
   reason.
 - Before relying on `kubectl` for anything, make sure it's pointed at the
   right cluster — don't assume a prior session already did this. Derive
-  the cluster name/region/profile from `terraform/base/` (its
-  `variables.tf` defaults, or `terraform -chdir=terraform/base output
+  the cluster name/region/profile from `terraform/eks/` (its
+  `variables.tf` defaults, or `terraform -chdir=terraform/eks output
   cluster_name` once applied) and run
   `aws eks update-kubeconfig --name <cluster_name> --region <region>
   --profile <profile>`. This only writes local kubeconfig, no AWS
@@ -100,7 +100,7 @@ Same steps as above, starting from step 1, except:
 - The task's **Request** is SRE's stated root cause, not a fresh ask from
   the human — log it as such so the task file shows where it came from.
 - The relevant directory is wherever SRE traced the problem to (this may
-  be `terraform/base/` — that's expected for an infrastructure-level
+  be `terraform/eks/` — that's expected for an infrastructure-level
   incident, not a mistake).
 - Everything else — branch, PR, wait for merge, plan, Checker, Gate,
   apply, verify — is identical. There's no separate "fast path" for

@@ -5,7 +5,7 @@
 # agent breaks it correctly" is not the point of this beat).
 set -euo pipefail
 
-cd "$(dirname "$0")/../terraform/base"
+cd "$(dirname "$0")/../terraform/eks"
 
 echo "Injecting fault: applying a NO_EXECUTE taint to the node group (node count unchanged)..."
 terraform apply -auto-approve -var fault_active=true

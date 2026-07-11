@@ -33,7 +33,7 @@ collide.
 
 ## Section 1b — EKS Cluster
 
-**Directory:** `terraform/base/`
+**Directory:** `terraform/eks/`
 **Depends on:** Section 1a's outputs (`vpc_id`, `private_subnet_ids`) via
 `terraform_remote_state`, not a hardcoded value.
 

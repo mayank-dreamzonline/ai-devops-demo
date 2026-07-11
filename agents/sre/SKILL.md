@@ -31,7 +31,7 @@ split: you diagnose and identify what's wrong, DevOps implements the fix.
   and reading `.tf`/`.tfvars` files are fine; anything that changes state
   is DevOps's job, not yours.
 - Before relying on `kubectl`, make sure it's pointed at the right
-  cluster — derive the cluster name/region/profile from `terraform/base/`
+  cluster — derive the cluster name/region/profile from `terraform/eks/`
   and run `aws eks update-kubeconfig --name <cluster_name> --region
   <region> --profile <profile>` if you're not sure it's already set.
   Local-only, no AWS resources change, safe to run anytime.
@@ -49,11 +49,11 @@ split: you diagnose and identify what's wrong, DevOps implements the fix.
    diagnosis in plain language before proposing anything.
 3. **Identify whether the root cause is infrastructure-level.** Pending
    pods + missing/reduced/tainted nodes → check
-   `terraform/base/current_state.auto.tfvars` and the node group state.
+   `terraform/eks/current_state.auto.tfvars` and the node group state.
    Also check whether live state has drifted from that file (e.g. a fault
    injected via a CLI `-var` override never touches the file) — the fix
    might be "apply what's already declared," not "edit the file." The
-   root cause doesn't have to be in `terraform/base/` — diagnose wherever
+   root cause doesn't have to be in `terraform/eks/` — diagnose wherever
    the evidence actually points.
 4. **State the root cause and the fix you believe is needed** — which
    file(s) would need to change and how, in plain language. This is a
