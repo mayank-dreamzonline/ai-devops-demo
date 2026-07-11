@@ -48,6 +48,11 @@ approval) before it ever plans or applies.
 
 ## Setup
 
+> Some files here (`.claude/`, `.gitignore`, `.env.example`) start with a
+> dot and won't show up in a plain `ls` or file browser — use `ls -la`
+> (or "show hidden files" in Finder/Explorer) to see them. This is normal
+> for any software project, not specific to this one.
+
 1. Clone this repo.
 2. Authenticate Claude Code, whichever applies to you:
    - **Claude subscription** (simplest, no key needed): run `claude` in
