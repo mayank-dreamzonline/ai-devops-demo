@@ -43,12 +43,18 @@ approval) before it ever plans or applies.
 - [kubectl](https://kubernetes.io/docs/tasks/tools/)
 - [GitHub CLI (`gh`)](https://cli.github.com/), authenticated
   (`gh auth login`)
-- An Anthropic API key
+- A way to authenticate Claude Code — either a Claude subscription
+  (Pro/Max/Team/Enterprise) or an Anthropic API key; see Setup step 2
 
 ## Setup
 
 1. Clone this repo.
-2. Copy `.env.example` to `.env` and set your own `ANTHROPIC_API_KEY`.
+2. Authenticate Claude Code, whichever applies to you:
+   - **Claude subscription** (simplest, no key needed): run `claude` in
+     this directory and log in when prompted, or run `claude login`
+     directly.
+   - **API key instead**: copy `.env.example` to `.env` and set your own
+     `ANTHROPIC_API_KEY`.
 3. Set your AWS profile name and region in each `terraform/*/variables.tf`
    (default profile name is `ai-devops-demo` — change it to match your
    own AWS CLI profile, or create a profile with that name).
