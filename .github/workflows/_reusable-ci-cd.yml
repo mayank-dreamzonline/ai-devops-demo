@@ -21,7 +21,7 @@ on:
         type: string
         required: true
       deploy:
-        description: True on merge to QA (run CD too); false on PR (CI only)
+        description: True on merge to develop (run CD too); false on PR (CI only)
         type: boolean
         required: true
 

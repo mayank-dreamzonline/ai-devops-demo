@@ -8,18 +8,18 @@ name: ai-devops-demo-app CI/CD
 
 on:
   pull_request:
-    branches: [QA]
+    branches: [develop]
     paths:
       - 'app/**'
       - 'cicd/k8s/ai-devops-demo-app/**'
   push:
-    branches: [QA]
+    branches: [develop]
     paths:
       - 'app/**'
       - 'cicd/k8s/ai-devops-demo-app/**'
 
 concurrency:
-  group: ci-cd-ai-devops-demo-app-QA
+  group: ci-cd-ai-devops-demo-app-develop
   cancel-in-progress: true
 
 jobs:

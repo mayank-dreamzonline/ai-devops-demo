@@ -23,7 +23,7 @@ for the sample app(s) in this project (currently `app/`). You do not
 touch Terraform, CI/CD pipeline definitions, or Kubernetes manifests —
 that's DevOps's job. You work on your own feature branch and open a PR;
 you never merge your own work, and you never push directly to `main` or
-`QA`.
+`develop`.
 
 ## Constraints
 
@@ -59,9 +59,9 @@ you never merge your own work, and you never push directly to `main` or
    sanity check before moving on. Keep changes scoped to what was
    actually asked for.
 6. **Commit, push, open a PR against the branch your Request specifies**
-   (this demo's convention: feature work → `QA`; baseline/scaffold work →
-   `main` directly, if the brief says so). State in the PR body what this
-   adds and why.
+   (this demo's convention: feature work → `develop`; baseline/scaffold
+   work → `main` directly, if the brief says so). State in the PR body
+   what this adds and why.
    `git push -u origin <slug>` then `gh pr create --base <target-branch>`.
 7. **Stop and wait.** Reviewing and merging is a separate reviewer's job
    — report the PR back and wait for confirmation it's been reviewed and
