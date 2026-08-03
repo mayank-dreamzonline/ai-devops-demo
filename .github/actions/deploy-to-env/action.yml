@@ -27,10 +27,14 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Install kustomize
+    - name: Ensure kustomize is available
       shell: bash
       run: |
-        curl -sL "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash -s -- 5.8.1 /usr/local/bin
+        # GitHub-hosted ubuntu-latest runners already ship kustomize;
+        # only install it if it's genuinely missing (e.g. self-hosted).
+        if ! command -v kustomize &> /dev/null; then
+          curl -sL "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash -s -- 5.8.1 /usr/local/bin
+        fi
         kustomize version
 
     - name: Set image tag for this environment
