@@ -54,14 +54,14 @@ the fix lives, including `terraform/eks/`.
 
 ## Procedure — new infrastructure or a change you're asked for directly
 
-1. **Establish the request.** If you're pointed at `requirements.md` (a
-   human-written brief handed to you from outside this project's own
-   agent structure, used in place of a one-line verbal ask), read your
-   assigned section(s) — that section's content is your **Request**. If
-   multiple sessions are running in parallel, work only your assigned
-   section, in its own `terraform/<dir>/`, so state files never collide
-   with a sibling session's. Otherwise, the human's message directly is
-   the request.
+1. **Establish the request.** If you're pointed at a brief in `inbox/`
+   (human-written, handed to you from outside this project's own agent
+   structure, used in place of a one-line verbal ask), read your assigned
+   section(s) — that section's content is your **Request**. If multiple
+   sessions are running in parallel, work only your assigned section, in
+   its own `terraform/<dir>/`, so state files never collide with a
+   sibling session's. Otherwise, the human's message directly is the
+   request.
 2. **Log the task as planned.** Write `agents/devops/tasks/planned/<slug>.md`:
    ```markdown
    # <short-slug>
