@@ -1,0 +1,33 @@
+name: ai-devops-demo-app CI/CD
+
+# Thin caller — no pipeline logic lives here. All of it is in
+# _reusable-ci-cd.yml; this file just says which service, which paths
+# trigger it, and passes this service's inputs. A second service adds its
+# own copy of this file (different name/app-path/k8s-path/image), pointed
+# at the same reusable workflow — nothing here gets duplicated in the logic.
+
+on:
+  pull_request:
+    branches: [QA]
+    paths:
+      - 'app/**'
+      - 'cicd/k8s/ai-devops-demo-app/**'
+  push:
+    branches: [QA]
+    paths:
+      - 'app/**'
+      - 'cicd/k8s/ai-devops-demo-app/**'
+
+concurrency:
+  group: ci-cd-ai-devops-demo-app-QA
+  cancel-in-progress: true
+
+jobs:
+  ci-cd:
+    uses: ./.github/workflows/_reusable-ci-cd.yml
+    with:
+      app-name: ai-devops-demo-app
+      app-path: app
+      k8s-path: cicd/k8s/ai-devops-demo-app
+      image: ghcr.io/${{ github.repository_owner }}/ai-devops-demo-app
+      deploy: ${{ github.event_name == 'push' }}
