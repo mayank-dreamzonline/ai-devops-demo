@@ -19,4 +19,7 @@ Scope:
 **PR:** https://github.com/mayank-dreamzonline/ai-devops-demo/pull/3
 (branch `section-0-base-scaffold` → `main`). Local `npm test` (4 tests)
 and `eslint .` both clean; Docker build not exercised locally (daemon
-wasn't running). Waiting on review/merge.
+wasn't running).
+
+**Outcome:** Merged 2026-08-03 (merge commit `d2baff1`). Section 0 is now
+on `main` — Sections 1/2 can branch from it.
