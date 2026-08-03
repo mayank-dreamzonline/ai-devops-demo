@@ -1,0 +1,47 @@
+name: Deploy to environment
+description: >
+  Promotes an already-built image to one Kubernetes namespace via Kustomize.
+  Never rebuilds — just points the overlay at the given tag and applies it.
+  Assumes kubectl is already configured against the target cluster (the
+  calling job handles AWS/OIDC auth and kubeconfig setup, since each
+  environment's job needs its own credentials anyway).
+
+inputs:
+  environment:
+    description: Target namespace/environment (dev, staging, prod)
+    required: true
+  k8s-path:
+    description: Path to this service's Kustomize root, e.g. cicd/k8s/ai-devops-demo-app
+    required: true
+  app-name:
+    description: Deployment name, for the rollout-status check
+    required: true
+  image:
+    description: Full image ref without tag, e.g. ghcr.io/OWNER/ai-devops-demo-app
+    required: true
+  image-tag:
+    description: Commit SHA the pipeline built and tagged earlier — the exact
+      artifact being promoted, never a rebuild
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Install kustomize
+      shell: bash
+      run: |
+        curl -sL "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash -s -- 5.8.1 /usr/local/bin
+        kustomize version
+
+    - name: Set image tag for this environment
+      shell: bash
+      working-directory: ${{ inputs.k8s-path }}/overlays/${{ inputs.environment }}
+      run: kustomize edit set image "${{ inputs.image }}=${{ inputs.image }}:${{ inputs.image-tag }}"
+
+    - name: Apply
+      shell: bash
+      run: kubectl apply -k "${{ inputs.k8s-path }}/overlays/${{ inputs.environment }}"
+
+    - name: Wait for rollout
+      shell: bash
+      run: kubectl rollout status deployment/${{ inputs.app-name }} -n ${{ inputs.environment }} --timeout=120s
