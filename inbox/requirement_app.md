@@ -29,41 +29,56 @@ the `QA`-branch review flow Sections 1/2 use.
 - Node.js + Express, minimal dependencies.
 - `/health` endpoint — returns JSON. This is for Kubernetes liveness/
   readiness probes later, not meant for a human to read in a browser.
-- Test framework wired up (Jest or similar), with at least one passing
-  test for `/health`, so the suite isn't empty before Sections 1/2 add to
-  it.
+- A shared `lookup(data, category)` helper: given an array of
+  `{ text, category }` items and an optional `category`, returns a random
+  matching item, or a random item from the full array if no category is
+  given, or throws/signals an error if `category` doesn't match anything
+  in the data. Content-agnostic — Sections 1 and 2 each bring their own
+  data array and call this same helper.
 - A single shared router/route-registration file that Sections 1 and 2
-  will both add to.
+  will both add a route to — this is the deliberate merge-conflict point
+  between the two features.
+- Test framework wired up (Jest or similar), with at least one passing
+  test for `/health` and at least one for the `lookup` helper itself, so
+  the suite isn't empty before Sections 1/2 add to it.
 - `Dockerfile` — multi-stage build, non-root user, slim runtime image.
 - `.dockerignore`.
 - ESLint config, no lint errors on the scaffold itself.
-- No routes beyond `/health` yet.
+- No feature routes beyond `/health` yet.
 
-## Section 1 — Feature A
-
-**Base branch:** `main` (after Section 0 is merged)
-**Target branch:** `QA`
-
-- One route, your choice of what it does — keep it small enough that a
-  viewer can see the response and immediately tell it's different from
-  Feature B.
-- Plain text or simple rendered HTML response is enough — no separate
-  frontend, no build step. `/health` stays JSON; this route doesn't need
-  to be.
-- Register the route in the shared router file from Section 0.
-- At least one unit test for the route.
-
-## Section 2 — Feature B
+## Section 1 — Feature A: `/tip`
 
 **Base branch:** `main` (after Section 0 is merged)
 **Target branch:** `QA`
 
-- Same shape as Section 1 — one route, visibly distinct from Feature A's,
-  plain text/simple HTML response, at least one unit test.
-- Register the route in the same shared router file Section 1 uses — both
+- Add a `data/tips.js` array of DevOps tips, each `{ text, category }`
+  (categories: `git`, `docker`, `kubernetes` — at least a couple of tips
+  per category).
+- Register `GET /tip` in the shared router file, calling Section 0's
+  `lookup(tips, req.query.category)`:
+  - No `category` query param → a random tip from the full set.
+  - Valid `category` → a random tip filtered to that category.
+  - Unrecognized `category` → `400` with an error message.
+- Plain text or simple rendered HTML response — no separate frontend, no
+  build step.
+- 3 unit tests: default (assert the result is one of the known tips),
+  valid category (assert the result belongs to that category),
+  unrecognized category (assert `400`).
+
+## Section 2 — Feature B: `/fact`
+
+**Base branch:** `main` (after Section 0 is merged)
+**Target branch:** `QA`
+
+- Same shape as Section 1, different content: add a `data/facts.js` array
+  of DevOps/tech facts, each `{ text, category }`, same three categories.
+- Register `GET /fact` in the **same shared router file** Section 1
+  registers `/tip` in, calling `lookup(facts, req.query.category)` with
+  the same three behaviors (default/valid/unrecognized category). Both
   features touching that file is deliberate, not a mistake: it's what
   makes the merge into `QA` a real merge conflict to resolve, rather than
   two conflict-free parallel merges.
+- Same 3 unit tests, mirrored for `/fact`.
 
 ---
 
