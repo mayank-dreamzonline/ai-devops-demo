@@ -29,3 +29,9 @@ PROGRESS_ci_cd_demo.md
 terraform/**/.terraform/
 terraform/**/*.tfstate*
 terraform/**/tfplan*
+
+# Real Terraform variable values (credentials, tokens) — never commit an
+# actual .tfvars file. *.tfvars.example files are explicitly allowed back
+# in below since they document expected format with no real values.
+terraform/**/*.tfvars
+!terraform/**/*.tfvars.example
