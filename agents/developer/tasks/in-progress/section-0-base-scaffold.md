@@ -15,3 +15,8 @@ Scope:
 - `Dockerfile` (multi-stage, non-root user, slim runtime), `.dockerignore`.
 - ESLint config, no lint errors on the scaffold.
 - No feature routes beyond `/health` yet.
+
+**PR:** https://github.com/mayank-dreamzonline/ai-devops-demo/pull/3
+(branch `section-0-base-scaffold` → `main`). Local `npm test` (4 tests)
+and `eslint .` both clean; Docker build not exercised locally (daemon
+wasn't running). Waiting on review/merge.
