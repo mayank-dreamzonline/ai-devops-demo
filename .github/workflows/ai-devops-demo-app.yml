@@ -22,6 +22,17 @@ concurrency:
   group: ci-cd-ai-devops-demo-app-develop
   cancel-in-progress: true
 
+# The repo's default workflow permissions are read-only. A reusable
+# workflow's jobs can never request more than this caller grants — package
+# needs packages: write (push to GHCR), the deploy jobs need id-token:
+# write (assume the AWS role via OIDC). Without this, GitHub refuses to
+# even start the run ("Invalid workflow file"), rather than silently
+# under-granting.
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
 jobs:
   ci-cd:
     uses: ./.github/workflows/_reusable-ci-cd.yml
