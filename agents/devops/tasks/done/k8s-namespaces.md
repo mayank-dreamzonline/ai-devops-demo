@@ -6,5 +6,7 @@ existing EKS cluster, via Terraform, per the CI/CD demo design pinned in
 written `inbox/` brief this time).
 
 **PR:** https://github.com/mayank-dreamzonline/ai-devops-demo/pull/4 —
-`terraform validate` clean. Waiting on merge before plan/apply (also
-needs `terraform/eks` live first — currently 0 resources).
+merged. `terraform/vpc` and `terraform/eks` applied for real first (19 +
+35 resources, cluster `ai-devops-demo` live, 2 nodes Ready), then
+`terraform/namespaces` planned (3 to add) and applied clean. Verified:
+`kubectl get namespaces dev staging prod` — all three `Active`.
