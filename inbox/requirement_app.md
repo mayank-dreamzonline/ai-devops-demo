@@ -24,7 +24,7 @@ serving the Terraform/infra demo unchanged.
 existing trunk, not a separately-created branch)
 **Target branch:** `main` directly — this section represents already-
 existing baseline code, not a reviewed feature, so it doesn't go through
-the `QA`-branch review flow Sections 1/2 use.
+the `develop`-branch review flow Sections 1/2 use.
 
 - Node.js + Express, minimal dependencies.
 - `/health` endpoint — returns JSON. This is for Kubernetes liveness/
@@ -49,7 +49,7 @@ the `QA`-branch review flow Sections 1/2 use.
 ## Section 1 — Feature A: `/tip`
 
 **Base branch:** `main` (after Section 0 is merged)
-**Target branch:** `QA`
+**Target branch:** `develop`
 
 - Add a `data/tips.js` array of DevOps tips, each `{ text, category }`
   (categories: `git`, `docker`, `kubernetes` — at least a couple of tips
@@ -68,7 +68,7 @@ the `QA`-branch review flow Sections 1/2 use.
 ## Section 2 — Feature B: `/fact`
 
 **Base branch:** `main` (after Section 0 is merged)
-**Target branch:** `QA`
+**Target branch:** `develop`
 
 - Same shape as Section 1, different content: add a `data/facts.js` array
   of DevOps/tech facts, each `{ text, category }`, same three categories.
@@ -76,7 +76,7 @@ the `QA`-branch review flow Sections 1/2 use.
   registers `/tip` in, calling `lookup(facts, req.query.category)` with
   the same three behaviors (default/valid/unrecognized category). Both
   features touching that file is deliberate, not a mistake: it's what
-  makes the merge into `QA` a real merge conflict to resolve, rather than
+  makes the merge into `develop` a real merge conflict to resolve, rather than
   two conflict-free parallel merges.
 - Same 3 unit tests, mirrored for `/fact`.
 
@@ -89,8 +89,8 @@ the `QA`-branch review flow Sections 1/2 use.
   on each other and can be worked fully concurrently once Section 0 is in.
 - Sections 1 and 2 are meant to be worked by two separate developer
   sessions/identities ("Dev A", "Dev B" — separate `git commit --author`,
-  not separate GitHub accounts), each opening its own PR against `QA`.
-- Every PR into `QA` needs its CI checks to pass plus 1 required approving
+  not separate GitHub accounts), each opening its own PR against `develop`.
+- Every PR into `develop` needs its CI checks to pass plus 1 required approving
   review (the "lead developer" role) before merge — the developer agent
   stops at "PR opened, waiting," it never merges its own work.
 - CI/CD pipeline work (the GitHub Actions workflow, Kubernetes manifests,
