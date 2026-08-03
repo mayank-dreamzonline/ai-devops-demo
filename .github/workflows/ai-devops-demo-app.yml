@@ -17,6 +17,9 @@ on:
     paths:
       - 'app/**'
       - 'cicd/k8s/ai-devops-demo-app/**'
+  # Manual re-run capability — e.g. re-testing a pipeline fix without
+  # needing a fresh app change to push.
+  workflow_dispatch: {}
 
 concurrency:
   group: ci-cd-ai-devops-demo-app-develop
@@ -41,4 +44,4 @@ jobs:
       app-path: app
       k8s-path: cicd/k8s/ai-devops-demo-app
       image: ghcr.io/${{ github.repository_owner }}/ai-devops-demo-app
-      deploy: ${{ github.event_name == 'push' }}
+      deploy: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
