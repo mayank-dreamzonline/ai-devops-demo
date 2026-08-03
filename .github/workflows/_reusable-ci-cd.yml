@@ -152,8 +152,10 @@ jobs:
       - name: Smoke test the live dev deployment
         run: |
           kubectl port-forward -n dev svc/${{ inputs.app-name }} 8080:80 &
-          sleep 3
-          curl -sf http://localhost:8080/health
+          # A fixed sleep here is a race against port-forward actually
+          # being ready -- retry-connrefused polls until it is, instead
+          # of guessing a delay that's sometimes too short.
+          curl --retry 10 --retry-delay 1 --retry-connrefused -sf http://localhost:8080/health
 
   # Real gate: pauses for required-reviewer approval on the "staging"
   # GitHub Environment (configured once, manually, in repo settings).
