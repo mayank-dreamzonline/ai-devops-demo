@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-devops-demo-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ai-devops-demo-app
+  template:
+    metadata:
+      labels:
+        app: ai-devops-demo-app
+    spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+      containers:
+        - name: ai-devops-demo-app
+          image: ghcr.io/mayank-dreamzonline/ai-devops-demo-app:placeholder
+          ports:
+            - containerPort: 3000
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 15

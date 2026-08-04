@@ -1,0 +1,43 @@
+name: Deploy to environment
+description: Promote a built image to one environment via Kustomize + kubectl.
+
+inputs:
+  environment:
+    description: Target environment (dev, staging, prod)
+    required: true
+  k8s-path:
+    description: Path to the service's Kustomize root (contains base/ and overlays/)
+    required: true
+  app-name:
+    description: Name of the app/Deployment being promoted
+    required: true
+  image:
+    description: Image repository (without tag)
+    required: true
+  image-tag:
+    description: Image tag to deploy
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Ensure kustomize is available
+      shell: bash
+      run: |
+        if ! command -v kustomize >/dev/null 2>&1; then
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          echo "$PWD" >> "$GITHUB_PATH"
+        fi
+
+    - name: Set image tag
+      shell: bash
+      working-directory: ${{ inputs.k8s-path }}/overlays/${{ inputs.environment }}
+      run: kustomize edit set image "${{ inputs.image }}=${{ inputs.image }}:${{ inputs.image-tag }}"
+
+    - name: Apply manifests
+      shell: bash
+      run: kubectl apply -k ${{ inputs.k8s-path }}/overlays/${{ inputs.environment }}
+
+    - name: Wait for rollout
+      shell: bash
+      run: kubectl rollout status deployment/${{ inputs.app-name }} -n ${{ inputs.environment }} --timeout=120s
