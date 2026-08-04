@@ -19,9 +19,11 @@ which keeps serving the Terraform/infra demo unchanged.
 merged to `main` as described — accurate history, not hypothetical.
 **Section 2 (`/fact`) and the parallel-developer/merge-conflict notes are
 superseded** — dropped as unnecessary complexity. The demo now uses a
-single feature (`/tip` only); Part 2 of the pipeline demo is one more
-simple `developer` change on a feature branch, PR'd directly against
-`main`, no second identity or deliberate conflict involved.
+single feature (`/tip` only). **Part 2 of the pipeline demo is Section 3
+below** — pinned down precisely (not left as "one more simple change") so
+there's no ambiguity for whoever builds it: a `developer` change on a
+feature branch, PR'd directly against `main`, no second identity or
+deliberate conflict involved.
 
 **Current deployment status:** the required infrastructure (VPC, EKS,
 `dev`/`staging`/`prod` namespaces, GitHub OIDC role, GHCR pull secret) is
@@ -99,6 +101,53 @@ the `develop`-branch review flow Sections 1/2 use.
   two conflict-free parallel merges.
 - Same 3 unit tests, mirrored for `/fact`.
 
+## Section 3 — Part 2 of the pipeline demo: add a `terraform` category to `/tip`
+
+**Base branch:** `main`
+**Target branch:** `main` directly (no `develop` branch — dropped
+repo-wide, see `inbox/requirement_pipeline.md`'s branching note)
+
+**Current behavior, before this change** (verified live against
+`app/data/tips.js` + `app/src/router.js`):
+
+| Request | Response |
+|---|---|
+| `GET /tip` | random tip from all 9 (3 each: `git`, `docker`, `kubernetes`) |
+| `GET /tip?category=git` (or `docker`/`kubernetes`) | random tip from that category |
+| `GET /tip?category=terraform` | **`400`** — `lookup: no items found for category "terraform"` |
+
+**The change — smallest real diff, same shape as Section 1, nothing
+structurally new:**
+- Add 2–3 new `{ text, category: 'terraform' }` entries to the existing
+  `app/data/tips.js` array (e.g. "Pin provider versions to avoid surprise
+  upgrades.", "Use remote state with locking, never local `.tfstate` in
+  a team repo.", "Review `terraform plan` output before every apply.").
+- **No new route, no new file, no new dependency.** `GET /tip`'s
+  existing `category` query-param handling (Section 0's `lookup()`
+  helper) already supports this — extending the data array is the whole
+  change.
+- Add one test asserting `category=terraform` now returns a valid tip
+  (mirrors Section 1's three existing `/tip` tests — default/valid
+  category/unrecognized category — this is a new "valid category" case).
+
+**Behavior after this change:**
+
+| Request | Response |
+|---|---|
+| `GET /tip?category=terraform` | **was `400`, now `200`** — a real terraform tip |
+
+That `400` → `200` flip is the whole demo payload: easy to verify with
+one `curl` per environment, and easy to see on camera that it's actually
+new content, not a coincidence.
+
+**How this maps to the recording — deploy-dev runs automatically (not
+part of the on-camera reveal), then:**
+1. `deploy-staging` completes (after your approval) → `curl
+   staging's /tip?category=terraform` → now `200` with a real tip. This
+   is the "it's in staging" moment.
+2. `deploy-prod` completes (after your approval) → same `curl` against
+   `prod` → same `200`. This is the "it's in prod too" moment.
+
 ---
 
 ## Notes for whoever's running the parallel-terminal session
@@ -114,4 +163,4 @@ the `develop`-branch review flow Sections 1/2 use.
   stops at "PR opened, waiting," it never merges its own work.
 - CI/CD pipeline work (the GitHub Actions workflow, Kubernetes manifests,
   Terraform for namespaces/OIDC) is **not** in this file and isn't the
-  developer agent's job — that's `devops`, per `inbox/requirement_ci-cd.md`.
+  developer agent's job — that's `devops`, per `inbox/requirement_pipeline.md`.
