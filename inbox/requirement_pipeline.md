@@ -231,11 +231,20 @@ and pass CI before merge, it's just not blocked on a reviewer.
    rules:
    - `pull_request` with `required_approving_review_count: 0` — still
      requires a PR to exist (no direct pushes), just no reviewer needed.
-   - `required_status_checks`, listing the CI job names once they exist
-     (`build-lint-test`, `dependency-scan`, `secrets-scan` — exact check
-     names only become selectable in the UI/API after the workflow has
-     run at least once; add this rule in a follow-up edit after the
-     first real PR, not on the very first attempt).
+   - **Deliberately no `required_status_checks` rule — do not add one.**
+     This repo's single `main` trunk takes PRs of two different shapes:
+     app-path PRs (trigger the CI workflow, produce real checks) and
+     pipeline/infra/doc PRs from devops (touch `.github/`, `cicd/`,
+     `terraform/`, `agents/`, `inbox/` — never `app/**`, so the workflow
+     never triggers, so no checks ever run against them). GitHub's
+     `required_status_checks` applies uniformly to every PR targeting the
+     branch — there's no way to scope it to "only when this workflow
+     actually ran." Adding it would make every devops PR permanently
+     unmergeable, stuck waiting on checks that structurally can never
+     appear. This isn't theoretical: every devops PR during this brief's
+     own first build attempt (a trigger-path fix, a full rollback, two
+     brief corrections) touched zero `app/**` files — every one of them
+     would have been stuck under this rule.
    - No `bypass_actors` needed — with 0 required approvals, there's
      nothing for the owner to need to bypass; a plain `gh pr merge`
      works directly, no `--admin` flag required.
