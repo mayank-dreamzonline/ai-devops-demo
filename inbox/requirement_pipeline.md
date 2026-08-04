@@ -5,12 +5,10 @@ other `inbox/` briefs. Read the section(s) assigned, treat that as your
 task's **Request**, follow the normal procedure (`agents/devops/SKILL.md`)
 — log the task, branch, write the code, PR, wait for merge, verify.
 
-This is a **reverse-engineered, corrected spec** — it was built and fully
-validated once already (real pipeline run, dev → staging → prod, all
-gates exercised for real), and every fix found during that validation is
-already folded into the requirements below. Following this brief exactly
-should produce a working pipeline on the first attempt, not after
-several rounds of debugging.
+Every requirement below is specified precisely enough to build a working
+pipeline in a single pass — versions, trigger conditions, job ordering,
+and the GitHub-side settings it depends on are all stated explicitly
+rather than left to be discovered while building.
 
 `app/` (Section 0 + `/tip`) and all infra (`terraform/vpc`,
 `terraform/eks`, `terraform/namespaces`, `terraform/github-oidc`) already
@@ -32,11 +30,9 @@ matches a well-known CI/CD pattern, describe it generically (e.g. "a
 standard CI/CD flow: build → test → package → deploy" or "the flow
 diagram this demo follows"), never attributed to anyone by name.
 
-**Branching note:** earlier validation of this pipeline used a separate
-`develop` integration branch. That's been dropped as unnecessary
-complexity — the app's feature branches now PR directly against `main`,
-same as everything else in this repo. Simpler, and it's what "Section 5"
-below now reflects.
+**Branching note:** feature branches PR directly against `main` — no
+separate `develop` integration branch. Simpler, and consistent with
+everything else in this repo. This is what Section 5 below reflects.
 
 ---
 
@@ -82,9 +78,9 @@ Inputs: `environment`, `k8s-path`, `app-name`, `image`, `image-tag`.
 Steps, in order:
 1. **Ensure kustomize is available** — check first (`command -v
    kustomize`), only install if genuinely missing. **`ubuntu-latest`
-   runners already ship `kustomize`** — an unconditional install script
-   will fail outright ("exists, remove it first"). This is not optional,
-   it will break the first real run otherwise.
+   runners already ship `kustomize`** — an unconditional install step
+   fails when it's already present ("exists, remove it first"). Not
+   optional: skipping the check breaks the run.
 2. `kustomize edit set image "<image>=<image>:<image-tag>"`, run inside
    `<k8s-path>/overlays/<environment>`.
 3. `kubectl apply -k <k8s-path>/overlays/<environment>`.
@@ -137,9 +133,8 @@ Jobs, in dependency order:
    --retry 10 --retry-delay 1 --retry-connrefused -sf
    http://localhost:8080/health`** — not a fixed `sleep` before curl. A
    fixed sleep races against the port-forward tunnel actually being
-   ready and is genuinely flaky (confirmed: failed intermittently in
-   testing with a 3-second sleep). `retry-connrefused` polls until the
-   tunnel is actually up instead of guessing a delay.
+   ready and is flaky; `retry-connrefused` polls until the tunnel is
+   actually up instead of guessing a delay.
 6. **`deploy-staging`** — needs `[package, verify-dev, security-scan]`.
    `environment: staging` — this is the real gate (see Section 5 for the
    GitHub-side setup this depends on). Same auth + composite-action
@@ -176,8 +171,7 @@ permissions:
   # the deploy jobs need id-token:write) can NEVER request more than
   # this caller grants — GitHub refuses to even start the run
   # ("Invalid workflow file", zero jobs created) if this block is
-  # missing. This was the single largest source of confusing failures
-  # during validation; do not skip it.
+  # missing. Do not skip it.
 
 jobs:
   ci-cd:
@@ -193,16 +187,15 @@ jobs:
 ## Section 5 — One-time GitHub setup (not code — repo settings)
 
 These don't travel with the code and must be redone if the repo is ever
-recreated. All confirmed necessary during validation.
+recreated.
 
 **Deliberately no required-PR-review on `main`.** This is a solo-operated
 repo — GitHub blocks PR self-approval unconditionally (no setting
-disables it), so a required-review count of 1 would need a
-`bypass_actors` workaround just to let the owner merge their own PRs.
-That mechanism was built and validated once already, but it adds real
-complexity (and was the single most settings-drift-prone part of the
-whole setup) for a review that can never genuinely come from a second
-person anyway. The `staging`/`prod` environment approval gates already
+disables it), so a required-review count of 1 would force a
+`bypass_actors` workaround just for the owner to merge their own PRs.
+That's real complexity — and a settings-drift-prone one — for a review
+that can never genuinely come from a second person anyway. The
+`staging`/`prod` environment approval gates already
 carry the "a human must approve" story — self-approval *is* allowed
 there, since environment-deployment approval is a different GitHub
 mechanism from PR review (see Section 6). So: `main`'s PR gate is
@@ -236,11 +229,10 @@ and pass CI before merge, it's just not blocked on a reviewer.
      branches," which follows the ruleset dynamically, or an explicit
      custom policy naming `main`).
    - **Re-verify these three settings via the API after any later change
-     to the environment's branch-policy list** — confirmed during
-     validation that editing `prod`'s deployment-branch-policies
-     sub-resource had the side effect of silently clearing its
-     required-reviewers rule. Cheap to check, expensive to discover
-     during a recording:
+     to the environment's branch-policy list** — editing `prod`'s
+     deployment-branch-policies sub-resource can silently clear its
+     required-reviewers rule as a side effect. Cheap to check, expensive
+     to discover during a recording:
      `gh api repos/<owner>/<repo>/environments/<name> --jq
      '.protection_rules, .can_admins_bypass'`
    - `dev` needs no protection rules — just needs to exist (it's created
