@@ -1,0 +1,46 @@
+name: Deploy to environment
+description: Set the image tag for one environment's overlay, apply it, and confirm the rollout comes up.
+
+inputs:
+  environment:
+    description: Target environment / namespace (dev, staging, prod)
+    required: true
+  k8s-path:
+    description: Path to the service's Kustomize root (contains base/ and overlays/)
+    required: true
+  app-name:
+    description: Deployment name to watch for rollout status
+    required: true
+  image:
+    description: Image repository, without tag (e.g. ghcr.io/owner/app)
+    required: true
+  image-tag:
+    description: Tag to deploy (short commit SHA)
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Ensure kustomize is available
+      shell: bash
+      run: |
+        if command -v kustomize >/dev/null 2>&1; then
+          echo "kustomize already installed: $(kustomize version)"
+        else
+          echo "kustomize not found, installing..."
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+        fi
+
+    - name: Set image tag
+      shell: bash
+      working-directory: ${{ inputs.k8s-path }}/overlays/${{ inputs.environment }}
+      run: kustomize edit set image "${{ inputs.image }}=${{ inputs.image }}:${{ inputs.image-tag }}"
+
+    - name: Apply manifests
+      shell: bash
+      run: kubectl apply -k ${{ inputs.k8s-path }}/overlays/${{ inputs.environment }}
+
+    - name: Confirm rollout
+      shell: bash
+      run: kubectl rollout status deployment/${{ inputs.app-name }} -n ${{ inputs.environment }} --timeout=120s

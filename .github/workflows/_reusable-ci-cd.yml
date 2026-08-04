@@ -1,0 +1,193 @@
+name: Reusable CI/CD
+
+on:
+  workflow_call:
+    inputs:
+      app-name:
+        required: true
+        type: string
+      app-path:
+        required: true
+        type: string
+      k8s-path:
+        required: true
+        type: string
+      image:
+        required: true
+        type: string
+      deploy:
+        required: true
+        type: boolean
+
+env:
+  AWS_REGION: us-east-1
+  EKS_CLUSTER_NAME: ai-devops-demo
+
+jobs:
+  build-lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: ${{ inputs.app-path }}/package-lock.json
+      - run: npm ci
+        working-directory: ${{ inputs.app-path }}
+      - run: npm run lint
+        working-directory: ${{ inputs.app-path }}
+      - run: npm test
+        working-directory: ${{ inputs.app-path }}
+
+  dependency-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: ${{ inputs.app-path }}/package-lock.json
+      - run: npm ci
+        working-directory: ${{ inputs.app-path }}
+      - run: npm audit --audit-level=high
+        working-directory: ${{ inputs.app-path }}
+
+  secrets-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  package:
+    if: inputs.deploy
+    needs: [build-lint-test, dependency-scan, secrets-scan]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image-tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v6
+      - id: tag
+        run: echo "tag=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ inputs.app-path }}
+          push: true
+          load: true
+          tags: ${{ inputs.image }}:${{ steps.tag.outputs.tag }}
+      - name: Smoke-test pushed image
+        run: |
+          docker run -d --name smoke-test -p 3000:3000 "${{ inputs.image }}:${{ steps.tag.outputs.tag }}"
+          curl --retry 10 --retry-delay 1 --retry-connrefused -sf http://localhost:3000/health
+          docker rm -f smoke-test
+        # retry-connrefused (not a fixed sleep) because the container needs
+        # a moment to bind its port after `docker run -d` returns.
+
+  security-scan:
+    if: inputs.deploy
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ inputs.image }}:${{ needs.package.outputs.image-tag }}
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+
+  deploy-dev:
+    if: inputs.deploy
+    needs: package
+    runs-on: ubuntu-latest
+    environment: dev
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - run: aws eks update-kubeconfig --name "${{ env.EKS_CLUSTER_NAME }}" --region "${{ env.AWS_REGION }}"
+      - uses: ./.github/actions/deploy-to-env
+        with:
+          environment: dev
+          k8s-path: ${{ inputs.k8s-path }}
+          app-name: ${{ inputs.app-name }}
+          image: ${{ inputs.image }}
+          image-tag: ${{ needs.package.outputs.image-tag }}
+
+  verify-dev:
+    needs: [package, deploy-dev]
+    runs-on: ubuntu-latest
+    environment: dev
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - run: aws eks update-kubeconfig --name "${{ env.EKS_CLUSTER_NAME }}" --region "${{ env.AWS_REGION }}"
+      - name: Smoke test via port-forward
+        run: |
+          kubectl port-forward -n dev svc/${{ inputs.app-name }} 8080:80 &
+          curl --retry 10 --retry-delay 1 --retry-connrefused -sf http://localhost:8080/health
+
+  deploy-staging:
+    needs: [package, verify-dev, security-scan]
+    runs-on: ubuntu-latest
+    environment: staging
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - run: aws eks update-kubeconfig --name "${{ env.EKS_CLUSTER_NAME }}" --region "${{ env.AWS_REGION }}"
+      - uses: ./.github/actions/deploy-to-env
+        with:
+          environment: staging
+          k8s-path: ${{ inputs.k8s-path }}
+          app-name: ${{ inputs.app-name }}
+          image: ${{ inputs.image }}
+          image-tag: ${{ needs.package.outputs.image-tag }}
+
+  deploy-prod:
+    needs: [package, deploy-staging]
+    runs-on: ubuntu-latest
+    environment: prod
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - run: aws eks update-kubeconfig --name "${{ env.EKS_CLUSTER_NAME }}" --region "${{ env.AWS_REGION }}"
+      - uses: ./.github/actions/deploy-to-env
+        with:
+          environment: prod
+          k8s-path: ${{ inputs.k8s-path }}
+          app-name: ${{ inputs.app-name }}
+          image: ${{ inputs.image }}
+          image-tag: ${{ needs.package.outputs.image-tag }}
