@@ -17,6 +17,20 @@ pass locally, lint clean. Verified live locally: 400 -> 200 flip for
 
 **PR #27 opened**: https://github.com/mayank-dreamzonline/ai-devops-demo/pull/27
 
-**Status: waiting on review/merge.** This is the change that will
-trigger the pipeline for the first time — once merged, `deploy-dev` /
-`verify-dev` / `deploy-staging` / `deploy-prod` should all run for real.
+**PR #27 merged** (merge commit `7eb3b11`). Triggered the pipeline for
+the first time — full run https://github.com/mayank-dreamzonline/ai-devops-demo/actions/runs/30936758908,
+all 9 jobs succeeded: `dependency-scan`, `build-lint-test`,
+`secrets-scan`, `package`, `security-scan`, `deploy-dev`, `verify-dev`,
+`deploy-staging` (approved), `deploy-prod` (approved).
+
+Verified live at every stage via `kubectl port-forward` + curl,
+`category=terraform`:
+- **dev:** `200` with a real terraform tip, right after `deploy-dev`.
+- **staging:** `200`, right after approval + `deploy-staging`.
+- **prod:** `200`, right after approval + `deploy-prod` — confirmed the
+  `400 -> 200` flip against the same environment that was `400` before
+  this PR.
+
+**Status: done.** Part 2 complete — the pipeline (Part 1) has now been
+exercised end-to-end for real, promoting a genuine app change through
+dev, staging, and prod with both approval gates exercised.
