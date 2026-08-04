@@ -57,6 +57,43 @@ reset commit, nothing since re-created):
 `kubectl kustomize` for all four Kustomize builds before commit):
 Sections 1–4 as scoped above.
 
-**PR opened:** https://github.com/mayank-dreamzonline/ai-devops-demo/pull/17
-(branch `ci-cd-pipeline` → `main`). Waiting for review/merge — nothing in
-Part 1 actually triggers the pipeline; that's Part 2, developer's request.
+**PR merged:** https://github.com/mayank-dreamzonline/ai-devops-demo/pull/17
+(branch `ci-cd-pipeline` → `main`, merge commit `eedb373`).
+
+**Unexpected trigger on merge:** the merge itself touched
+`cicd/k8s/ai-devops-demo-app/**` (first time those files existed) — which
+matches the caller workflow's own `paths:` filter (Section 4 of the
+brief). Since that's a `push` to `main`, `deploy` evaluated `true` and the
+full deploy chain ran for real, contradicting the brief's stated Part 1
+intent ("merge with nothing yet triggering it"). Not a bug in what was
+built — it's Section 4's trigger definition (built exactly as specified)
+colliding with the fact that Part 1's own deliverable is the first-ever
+`cicd/k8s/**` commit to `main`. Worth the brief being corrected if this
+pipeline is rebuilt again.
+
+**Result of that real run** (https://github.com/mayank-dreamzonline/ai-devops-demo/actions/runs/30915377899):
+`build-lint-test`/`dependency-scan`/`secrets-scan` passed. `package`
+failed at the smoke-test step — `curl` exit 56 (`CURLE_RECV_ERROR`,
+connection accepted then reset), a transient-failure mode not covered by
+`--retry-connrefused` (which only covers connection-*refused*, not
+reset-after-connect). Downstream jobs (`security-scan` through
+`deploy-prod`) all skipped as a result. **Nothing deployed to any
+environment.**
+
+**Fix applied** (branch `narrow-ci-cd-trigger-paths`): dropped
+`cicd/k8s/ai-devops-demo-app/**` from `ai-devops-demo-app.yml`'s
+`pull_request`/`push` `paths:` filters — now watches `app/**` only.
+Decision (Mayank, in-conversation): this demo never exercises a
+manifest-only change triggering a deploy, so the realism that path
+bought wasn't worth its cost — it made Part 1's own first-ever manifest
+commit indistinguishable from "a manifest changed, redeploy," which is
+exactly what fired mid-recording. Removing it makes that collision
+structurally impossible instead of something to work around each rebuild
+(e.g. via disable/re-enable workflow). Editing the workflow file itself
+doesn't match either watched path, so merging this fix does not trigger
+a run.
+
+**Still open, not addressed by this fix:** the `package` job's
+smoke-test `curl` failure (exit 56, connection reset) from the earlier
+real run — that bug is independent of the trigger-path issue and will
+still be there whenever Part 2 actually exercises the pipeline for real.

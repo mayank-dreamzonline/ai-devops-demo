@@ -3,10 +3,10 @@ name: ai-devops-demo-app
 on:
   pull_request:
     branches: [main]
-    paths: ['app/**', 'cicd/k8s/ai-devops-demo-app/**']
+    paths: ['app/**']
   push:
     branches: [main]
-    paths: ['app/**', 'cicd/k8s/ai-devops-demo-app/**']
+    paths: ['app/**']
   workflow_dispatch: {}
 
 concurrency:
