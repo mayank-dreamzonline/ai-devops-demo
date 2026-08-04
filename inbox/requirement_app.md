@@ -11,9 +11,9 @@ terminals, separate branches/identities), each is told which section is
 theirs — work only your assigned section.
 
 This app exists purely to give the CI/CD pipeline (see
-`inbox/requirement_ci-cd.md`) something real to build, test, and promote —
-keep it small. It's separate from `terraform/app`'s whoami, which keeps
-serving the Terraform/infra demo unchanged.
+`inbox/requirement_pipeline.md`) something real to build, test, and
+promote — keep it small. It's separate from `terraform/app`'s whoami,
+which keeps serving the Terraform/infra demo unchanged.
 
 **Status:** Section 0 and Section 1 (`/tip`) below were both built and
 merged to `main` as described — accurate history, not hypothetical.
@@ -22,6 +22,17 @@ superseded** — dropped as unnecessary complexity. The demo now uses a
 single feature (`/tip` only); Part 2 of the pipeline demo is one more
 simple `developer` change on a feature branch, PR'd directly against
 `main`, no second identity or deliberate conflict involved.
+
+**Current deployment status:** the required infrastructure (VPC, EKS,
+`dev`/`staging`/`prod` namespaces, GitHub OIDC role, GHCR pull secret) is
+applied, and the app is already running in all three namespaces —
+`dev` (1 replica), `staging` (1 replica), `prod` (2 replicas), all on the
+same image tag, pulling from GHCR without issue. `/health` and `/tip`
+both respond correctly when checked directly against the live pods, and
+the full test suite passes (7/7: health, lookup, tip). **This is a
+brownfield scenario** — any pipeline or app work from here on is shipping
+a change to an app that's already live, not a first deployment; narrate
+and document it that way.
 
 ---
 
