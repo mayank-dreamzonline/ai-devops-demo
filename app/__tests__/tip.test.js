@@ -18,6 +18,14 @@ describe('GET /tip', () => {
     expect(dockerTips).toContain(res.text);
   });
 
+  it('returns a tip matching the terraform category', async () => {
+    const res = await request(app).get('/tip').query({ category: 'terraform' });
+
+    expect(res.status).toBe(200);
+    const terraformTips = tips.filter((t) => t.category === 'terraform').map((t) => t.text);
+    expect(terraformTips).toContain(res.text);
+  });
+
   it('returns 400 for an unrecognized category', async () => {
     const res = await request(app).get('/tip').query({ category: 'nope' });
 
