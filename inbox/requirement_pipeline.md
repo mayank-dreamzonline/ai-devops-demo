@@ -25,6 +25,13 @@ feature branch, PR it against `main`, and merge — that merge is what
 actually exercises the whole pipeline for the first time. Devops has no
 role in Part 2.
 
+**Code comment rule:** this is a professional reference implementation,
+not internal notes — code comments must never name a specific person,
+channel, or video as the source of a design decision. If a stage's shape
+matches a well-known CI/CD pattern, describe it generically (e.g. "a
+standard CI/CD flow: build → test → package → deploy" or "the flow
+diagram this demo follows"), never attributed to anyone by name.
+
 **Branching note:** earlier validation of this pipeline used a separate
 `develop` integration branch. That's been dropped as unnecessary
 complexity — the app's feature branches now PR directly against `main`,
@@ -119,8 +126,9 @@ Jobs, in dependency order:
    non-existent tag fails the whole run at startup with zero jobs run and
    a confusing error). `severity: HIGH,CRITICAL`, `exit-code: '1'`.
 4. **`deploy-dev`** — `if: inputs.deploy`, needs `package`. `environment:
-   dev` (no protection rules needed — auto, matches Nana's diagram).
-   OIDC auth (see Section 5) → `aws eks update-kubeconfig` → the
+   dev` (no protection rules needed — auto, matches the CI/CD flow diagram
+   this demo follows). OIDC auth (see Section 5) → `aws eks
+   update-kubeconfig` → the
    composite action from Section 2. Needs `permissions: { id-token:
    write, contents: read }`.
 5. **`verify-dev`** — needs `[package, deploy-dev]`. OIDC auth again (each

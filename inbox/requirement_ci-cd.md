@@ -1,6 +1,6 @@
 # CI/CD Requirements — DevOps Agent Brief
 
-This is a human-written brief for the second Nana demo (CI/CD use case), same
+This is a human-written brief for the second demo (CI/CD use case), same
 format as `requirements.md` — read the section(s) assigned, treat it as your
 task's **Request**, and follow the normal `agents/devops/SKILL.md` procedure:
 log the task, branch, write the change, PR, wait for merge, apply, verify.
@@ -129,9 +129,8 @@ exist.
 
 - Test audio levels with a short clip before the full take — this was the
   one thing flagged on the first demo.
-- The `TechWorldWithNana` path visible on screen is fine here — this is
-  going directly to Nana about her own engagement, no redaction needed
-  (unlike other-audience demos).
+- The current folder path visible on screen is fine for this recording,
+  no redaction needed (unlike other-audience demos).
 - If any real chance this gets reused elsewhere (portfolio, other bids),
   record from a generically-named location from the start rather than
   needing a second take later.
