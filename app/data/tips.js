@@ -8,6 +8,9 @@ const tips = [
   { text: 'Set resource requests and limits on every pod.', category: 'kubernetes' },
   { text: 'Use readiness probes to keep traffic off unready pods.', category: 'kubernetes' },
   { text: 'Namespace your workloads to isolate blast radius.', category: 'kubernetes' },
+  { text: 'Pin provider versions to avoid surprise upgrades.', category: 'terraform' },
+  { text: 'Use remote state with locking, never local `.tfstate` in a team repo.', category: 'terraform' },
+  { text: 'Review `terraform plan` output before every apply.', category: 'terraform' },
 ];
 
 module.exports = tips;
