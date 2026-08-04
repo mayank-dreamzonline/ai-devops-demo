@@ -140,13 +140,34 @@ That `400` → `200` flip is the whole demo payload: easy to verify with
 one `curl` per environment, and easy to see on camera that it's actually
 new content, not a coincidence.
 
-**How this maps to the recording — deploy-dev runs automatically (not
-part of the on-camera reveal), then:**
-1. `deploy-staging` completes (after your approval) → `curl
-   staging's /tip?category=terraform` → now `200` with a real tip. This
-   is the "it's in staging" moment.
-2. `deploy-prod` completes (after your approval) → same `curl` against
-   `prod` → same `200`. This is the "it's in prod too" moment.
+**Verification curls to actually run on camera — use explicit category
+params, not the bare `/tip`.** The bare `GET /tip` picks randomly across
+*all* categories once terraform tips exist, so it won't read as a clean,
+consistent before/after on camera (it might show a kubernetes tip either
+way, by chance). Use one fixed category on each side instead, so the
+output is deterministic and the same command always proves the same
+thing:
+
+- **Before-state check** (any environment, pre- or unaffected by this
+  change): `curl <env-url>/tip?category=kubernetes` → always returns a
+  real kubernetes tip. Proves the app is up and serving its existing
+  behavior correctly.
+- **After-state check** (the actual proof this change shipped):
+  `curl <env-url>/tip?category=terraform` → **`400` before this change
+  is deployed to that environment, `200` with a real tip after.**
+
+**Run the after-state check at every stage of the promotion, not just
+staging/prod** — developer (or whoever's driving the reveal) runs `curl
+.../tip?category=terraform` and shows the output at each of:
+1. **`dev`** — right after `deploy-dev` completes (auto, no gate).
+2. **`staging`** — right after `deploy-staging` completes (after your
+   approval click). This is the first gated "it's really there" moment.
+3. **`prod`** — right after `deploy-prod` completes (after your second
+   approval click). Same command, same proof, now in prod.
+
+Same URL path in all three, just a different environment's endpoint —
+same evidence repeated at every stage is what makes the promotion visible
+on camera, not just asserted.
 
 ---
 
