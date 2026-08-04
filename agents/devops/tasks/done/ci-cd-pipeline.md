@@ -57,6 +57,48 @@ reset commit, nothing since re-created):
 `kubectl kustomize` for all four Kustomize builds before commit):
 Sections 1–4 as scoped above.
 
-**PR opened:** https://github.com/mayank-dreamzonline/ai-devops-demo/pull/17
-(branch `ci-cd-pipeline` → `main`). Waiting for review/merge — nothing in
-Part 1 actually triggers the pipeline; that's Part 2, developer's request.
+**PR #17 merged**, then rolled back. Full sequence:
+
+1. PR #17 (branch `ci-cd-pipeline`) opened, CI checks passed, merged to
+   `main` (merge commit `eedb373`).
+2. **Unexpected trigger on that merge:** the merge itself touched
+   `cicd/k8s/ai-devops-demo-app/**` (first time those files existed),
+   which matched the caller workflow's own `paths:` filter (Section 4 of
+   the brief watched both `<app-path>/**` and `<k8s-path>/**`). Since
+   that's a `push` to `main`, `deploy` evaluated `true` and the pipeline
+   ran for real — contradicting the brief's stated Part 1 intent ("merge
+   with nothing yet triggering it"). Root cause: Part 1's own deliverable
+   *is* the first-ever `<k8s-path>/**` commit, so it can never avoid
+   matching a trigger that watches that path. Not a bug in what was
+   built — Section 4's trigger, built exactly as specified, colliding
+   with what Part 1 necessarily is.
+3. That real run (https://github.com/mayank-dreamzonline/ai-devops-demo/actions/runs/30915377899):
+   CI jobs passed; `package` failed at the smoke-test step (`curl` exit
+   56, `CURLE_RECV_ERROR` — connection accepted then reset, a failure
+   mode `--retry-connrefused` doesn't cover since it only retries
+   connection-*refused*). Downstream jobs all skipped. **Nothing
+   deployed to any environment** — confirmed no cluster impact.
+4. PR #18 opened (branch `narrow-ci-cd-trigger-paths`) to narrow the
+   trigger to `app-path` only — then **closed unmerged**, superseded by
+   a full rollback + brief correction instead (Mayank's call: fix the
+   source of truth, not just the merged code).
+5. **Rollback** (branch `rollback-pipeline-layer`): removed all of
+   Sections 1–4's files from `main` again
+   (`.github/workflows/_reusable-ci-cd.yml`, `ai-devops-demo-app.yml`,
+   `.github/actions/deploy-to-env/`, `cicd/k8s/ai-devops-demo-app/`).
+   Section 0 (Dockerfile) and Section 5 (GitHub settings) are untouched —
+   still in place, still correct, nothing to redo there.
+6. **`inbox/requirement_pipeline.md` corrected**: Section 4's trigger
+   template now watches `<app-path>/**` only, with an inline note
+   explaining why `<k8s-path>/**` was dropped (the bootstrapping
+   collision above) — so a future rebuild starts from a brief that
+   doesn't reproduce this bug.
+
+**Still open, not folded into the brief yet:** the `package` job's
+smoke-test `curl` exit-56 bug from step 3 is independent of the
+trigger-path issue and will still be there whenever this pipeline is next
+built and actually exercised — flagged to Mayank, not yet addressed.
+
+**Status: done (rolled back).** Ready for a fresh build attempt from the
+corrected brief whenever requested — that would be a new task, starting
+from `planned/` again.
