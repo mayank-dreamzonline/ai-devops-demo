@@ -27,8 +27,13 @@ pinning:
 
 **PR #25 opened**: https://github.com/mayank-dreamzonline/ai-devops-demo/pull/25
 
-**Status: waiting on review/merge.** Per procedure, not planning or
-applying anything further until the PR is merged — there's no
-Terraform in this task anyway, so the next step after merge is simply
-verifying the workflow exists on `main` untriggered (paths filter
-only matches `app/**`, which this PR doesn't touch).
+**PR #25 merged** (merge commit `52720fa`), confirmed via `gh pr view`.
+Pulled `main`, confirmed all 11 files present, confirmed the merge did
+not trigger the pipeline (`gh run list` shows no new run — only the old
+runs from the original PR #17 attempt).
+
+**Status: done.** Part 1 complete — pipeline layer lands on `main` with
+nothing yet exercising it. Ready for Part 2 (`developer` makes a real
+`app/**` change on a feature branch and merges it, which is what
+actually triggers the pipeline for the first time). Devops has no role
+in Part 2.
