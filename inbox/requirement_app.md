@@ -171,7 +171,16 @@ on camera, not just asserted.
 
 ---
 
-## Notes for whoever's running the parallel-terminal session
+## Notes for whoever's running the parallel-terminal session (historical — Sections 1/2 only, superseded)
+
+**These notes describe the original two-feature/two-identity plan and no
+longer reflect current reality — kept for history, not as current
+guidance.** The `develop` branch they reference was dropped repo-wide
+(see `inbox/requirement_pipeline.md`'s branching note), and Section 2
+(`/fact`) itself is superseded per the Status note at the top. Section 3
+is what's actually active now, and it targets `main` directly — read
+Section 3's own Base/Target branch lines for current guidance, not this
+section.
 
 - Section 0 must merge to `main` before Sections 1 and 2 can branch —
   it's the only ordering dependency. Sections 1 and 2 have no dependency
