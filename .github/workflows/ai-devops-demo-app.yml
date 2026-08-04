@@ -1,0 +1,35 @@
+name: ai-devops-demo-app CI/CD
+
+on:
+  pull_request:
+    branches: [main]
+    paths: ['app/**']
+  push:
+    branches: [main]
+    paths: ['app/**']
+  workflow_dispatch: {}   # manual re-runs, e.g. to re-test a fix
+
+concurrency:
+  group: ci-cd-ai-devops-demo-app-main
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+  # ^ This is not optional. The repo's default workflow permissions are
+  # read-only. A reusable workflow's jobs (package needs packages:write,
+  # the deploy jobs need id-token:write) can NEVER request more than
+  # this caller grants — GitHub refuses to even start the run
+  # ("Invalid workflow file", zero jobs created) if this block is
+  # missing. Do not skip it.
+
+jobs:
+  ci-cd:
+    uses: ./.github/workflows/_reusable-ci-cd.yml
+    with:
+      app-name: ai-devops-demo-app
+      app-path: app
+      k8s-path: cicd/k8s/ai-devops-demo-app
+      image: ghcr.io/${{ github.repository_owner }}/ai-devops-demo-app
+      deploy: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
