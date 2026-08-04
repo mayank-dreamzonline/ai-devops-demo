@@ -57,6 +57,6 @@ reset commit, nothing since re-created):
 `kubectl kustomize` for all four Kustomize builds before commit):
 Sections 1–4 as scoped above.
 
-**Next step:** PR against `main`, wait for merge (per
-`agents/devops/SKILL.md`'s standard procedure). Nothing in Part 1 actually
-triggers the pipeline — that's Part 2, developer's request.
+**PR opened:** https://github.com/mayank-dreamzonline/ai-devops-demo/pull/17
+(branch `ci-cd-pipeline` → `main`). Waiting for review/merge — nothing in
+Part 1 actually triggers the pipeline; that's Part 2, developer's request.
