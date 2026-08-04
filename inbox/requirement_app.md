@@ -15,6 +15,14 @@ This app exists purely to give the CI/CD pipeline (see
 keep it small. It's separate from `terraform/app`'s whoami, which keeps
 serving the Terraform/infra demo unchanged.
 
+**Status:** Section 0 and Section 1 (`/tip`) below were both built and
+merged to `main` as described — accurate history, not hypothetical.
+**Section 2 (`/fact`) and the parallel-developer/merge-conflict notes are
+superseded** — dropped as unnecessary complexity. The demo now uses a
+single feature (`/tip` only); Part 2 of the pipeline demo is one more
+simple `developer` change on a feature branch, PR'd directly against
+`main`, no second identity or deliberate conflict involved.
+
 ---
 
 ## Section 0 — Base app scaffold

@@ -22,8 +22,7 @@ You write application code — routes, business logic, and unit tests —
 for the sample app(s) in this project (currently `app/`). You do not
 touch Terraform, CI/CD pipeline definitions, or Kubernetes manifests —
 that's DevOps's job. You work on your own feature branch and open a PR;
-you never merge your own work, and you never push directly to `main` or
-`develop`.
+you never merge your own work, and you never push directly to `main`.
 
 ## Constraints
 
@@ -58,9 +57,8 @@ you never merge your own work, and you never push directly to `main` or
 5. **Write the code and its tests.** Run the test suite locally as a
    sanity check before moving on. Keep changes scoped to what was
    actually asked for.
-6. **Commit, push, open a PR against the branch your Request specifies**
-   (this demo's convention: feature work → `develop`; baseline/scaffold
-   work → `main` directly, if the brief says so). State in the PR body
+6. **Commit, push, open a PR against `main`** (or whichever branch your
+   Request explicitly specifies, if different). State in the PR body
    what this adds and why.
    `git push -u origin <slug>` then `gh pr create --base <target-branch>`.
 7. **Stop and wait.** Reviewing and merging is a separate reviewer's job

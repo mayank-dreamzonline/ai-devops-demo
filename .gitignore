@@ -21,6 +21,7 @@ PROGRESS.md
 docs/internal/
 ENGAGEMENT.md
 PROGRESS_ci_cd_demo.md
+PIPELINE_WALKTHROUGH.md
 
 # Terraform local state and working dirs — never commit real cluster state.
 # The wildcard-suffix form (not just an exact .tfstate.backup match) also
