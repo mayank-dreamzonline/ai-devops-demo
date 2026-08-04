@@ -148,14 +148,26 @@ Jobs, in dependency order:
 **File:** `.github/workflows/<service-name>.yml` (e.g.
 `ai-devops-demo-app.yml`) — one per service, no pipeline logic in it.
 
+**Trigger paths: `<app-path>/**` only — do not also watch `<k8s-path>/**`.**
+Watching the k8s-path too is the theoretically "more correct" choice (a
+manifest-only change is a real deployable change), but it has a fatal
+bootstrapping problem the first time this brief is executed: Part 1's own
+deliverable is the first-ever commit of `<k8s-path>/**` to `main`, so a
+k8s-path trigger fires on Part 1's own merge — the exact merge that's
+supposed to land quietly with "nothing yet triggering it." This isn't
+hypothetical; it happened on the first attempt at building this brief and
+ran the pipeline mid-build. This demo never exercises a manifest-only
+change triggering a deploy anyway, so the trade-off isn't worth it here —
+app-path only.
+
 ```yaml
 on:
   pull_request:
     branches: [main]
-    paths: ['<app-path>/**', '<k8s-path>/**']
+    paths: ['<app-path>/**']
   push:
     branches: [main]
-    paths: ['<app-path>/**', '<k8s-path>/**']
+    paths: ['<app-path>/**']
   workflow_dispatch: {}   # manual re-runs, e.g. to re-test a fix
 
 concurrency:
