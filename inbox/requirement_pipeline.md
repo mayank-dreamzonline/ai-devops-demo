@@ -112,9 +112,17 @@ Jobs, in dependency order:
    with **both** `push: true` and `load: true` (single-platform build,
    so this combination is supported — it is *not* supported for
    multi-platform builds, don't add a `platforms:` list). Then smoke-test
-   the exact pushed/loaded image: `docker run -d`, hit `/health`, tear
-   down. Needs job-level `permissions: { contents: read, packages:
-   write }`.
+   the exact pushed/loaded image: `docker run -d`, hit `/health` with
+   **`curl --retry 10 --retry-delay 1 --retry-connrefused
+   --retry-all-errors -sf http://localhost:<port>/health`**, tear down.
+   `--retry-all-errors` is not optional here: a fresh container's port
+   can be accepted by Docker's proxy and then reset before the process
+   inside finishes starting, which surfaces as `CURLE_RECV_ERROR` (curl
+   exit 56) — a distinct failure mode from "connection refused" that
+   `--retry-connrefused` alone does not retry. This isn't hypothetical:
+   without `--retry-all-errors`, this exact step failed on the first
+   real build with curl exiting 56 within ~200ms, no retry attempted.
+   Needs job-level `permissions: { contents: read, packages: write }`.
 3. **`security-scan`** — `if: inputs.deploy`, needs `package`.
    `aquasecurity/trivy-action` — **verify the version tag actually exists
    before pinning it** (check `gh api repos/aquasecurity/trivy-action/tags`

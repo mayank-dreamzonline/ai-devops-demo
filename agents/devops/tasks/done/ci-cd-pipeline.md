@@ -94,11 +94,19 @@ Sections 1–4 as scoped above.
    collision above) — so a future rebuild starts from a brief that
    doesn't reproduce this bug.
 
-**Still open, not folded into the brief yet:** the `package` job's
-smoke-test `curl` exit-56 bug from step 3 is independent of the
-trigger-path issue and will still be there whenever this pipeline is next
-built and actually exercised — flagged to Mayank, not yet addressed.
+7. **`inbox/requirement_pipeline.md` corrected again** (branch
+   `fix-smoke-test-retry-spec`): Section 3's `package`-job smoke-test now
+   specifies `curl --retry-all-errors` alongside `--retry-connrefused`.
+   Root cause: `--retry-connrefused` only retries "connection refused"
+   (curl exit 7); the real failure seen in step 3 above was `CURLE_RECV_ERROR`
+   (exit 56) — a fresh container's port accepted by Docker's proxy then
+   reset before the process inside finished starting, a different
+   transient failure mode that needs `--retry-all-errors` to be retried
+   at all.
 
-**Status: done (rolled back).** Ready for a fresh build attempt from the
-corrected brief whenever requested — that would be a new task, starting
-from `planned/` again.
+**Status: done (rolled back and brief corrected, twice).** Both real bugs
+hit during the first build attempt (trigger-path collision, smoke-test
+retry gap) are now folded into `inbox/requirement_pipeline.md` as stated
+requirements. Ready for a fresh build attempt from the corrected brief
+whenever requested — that would be a new task, starting from `planned/`
+again.
