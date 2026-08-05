@@ -21,7 +21,12 @@ PROGRESS.md
 docs/internal/
 ENGAGEMENT.md
 PROGRESS_ci_cd_demo.md
-PIPELINE_WALKTHROUGH.md
+
+# PIPELINE_WALKTHROUGH.md is deliberately NOT excluded — its content is
+# a client-safe architecture writeup (agent roles, pipeline design,
+# file-by-file breakdown), reviewed and confirmed to contain no names
+# or engagement-specific details. It's the one internal-design doc
+# that ships with the repo instead of staying local-only.
 
 # Terraform local state and working dirs — never commit real cluster state.
 # The wildcard-suffix form (not just an exact .tfstate.backup match) also
