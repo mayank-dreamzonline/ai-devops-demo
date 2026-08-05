@@ -28,6 +28,12 @@ PROGRESS_ci_cd_demo.md
 # or engagement-specific details. It's the one internal-design doc
 # that ships with the repo instead of staying local-only.
 
+# AWS resource inventory / teardown-tracking task records — real account
+# IDs, instance IDs, and cost/teardown bookkeeping for this specific demo
+# account. Local-only so nothing about the live AWS account or its cost
+# state ends up in the public repo.
+agents/devops/tasks/**/aws-inventory*.md
+
 # Terraform local state and working dirs — never commit real cluster state.
 # The wildcard-suffix form (not just an exact .tfstate.backup match) also
 # catches Terraform's timestamped backup variant, e.g.
